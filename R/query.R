@@ -12,13 +12,13 @@ send_query <- function(conn,sql_query){
 }
 
 get_query_result <- function(conn, res){
-  parsed = jsonlite::fromJSON(content(res,'text', encoding='UTF-8'))
+  parsed = jsonlite::fromJSON(httr::content(res,'text', encoding='UTF-8'))
   keys = names(parsed)
   dataframes = list()
   while('nextUri' %in% keys){
     nextUri = parsed$nextUri
     res = GET(nextUri)
-    parsed = jsonlite::fromJSON(content(res,'text', encoding='UTF-8'))
+    parsed = jsonlite::fromJSON(httr::content(res,'text', encoding='UTF-8'))
     keys = names(parsed)
     if('data' %in% keys){
       column_names = as.list(parsed$columns[,1])
