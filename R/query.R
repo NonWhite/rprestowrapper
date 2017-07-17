@@ -1,7 +1,7 @@
 send_query <- function(conn,sql_query){
 	url = paste(conn$host, ':', conn$port, '/v1/statement', sep = '')
 	body = sql_query
-	r = POST(url, body = body, encode = "raw",
+	r = httr::POST(url, body = body, encode = "raw",
 			add_headers('X-Presto-Catalog' = conn$catalog,
 				'X-Presto-Source' = conn$source,
 				'X-Presto-Schema' = conn$schema,
@@ -13,10 +13,10 @@ send_query <- function(conn,sql_query){
 
 get_query_result <- function(res){
 	browser()
-	parsed = fromJSON(content(res,'text'))
+	parsed = jsonlite::fromJSON(content(res,'text'))
 	nextUri = parsed$nextUri
-	res = GET(nextUri)
-	parsed = fromJSON(content(res,'text'))
+	res = httr::GET(nextUri)
+	parsed = jsonlite::fromJSON(content(res,'text'))
 	keys = names(parsed)
 	dataframes = list()
 	while('nextUri' %in% keys){
@@ -27,8 +27,8 @@ get_query_result <- function(res){
 		}
 		dataframes = c(dataframes, list(dataframe))
 		nextUri = parsed$nextUri
-		res = GET(nextUri)
-		parsed = fromJSON(content(res,'text'))
+		res = httr::GET(nextUri)
+		parsed = jsonlite::fromJSON(content(res,'text'))
 		keys = names(parsed)
 	}
 	Reduce(function(x, y) merge(x, y, all=TRUE), dataframes)
