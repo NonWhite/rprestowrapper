@@ -2,7 +2,7 @@ send_query <- function(conn,sql_query){
 	url = paste(conn$host, ':', conn$port, '/v1/statement', sep = '')
 	body = sql_query
 	r = httr::POST(url, body = body, encode = "raw",
-			add_headers('X-Presto-Catalog' = conn$catalog,
+			httr::add_headers('X-Presto-Catalog' = conn$catalog,
 				'X-Presto-Source' = conn$source,
 				'X-Presto-Schema' = conn$schema,
 				'User-Agent' = 'rprestowrapper',
@@ -11,13 +11,14 @@ send_query <- function(conn,sql_query){
 		)
 }
 
-get_query_result <- function(conn, parsed){
+get_query_result <- function(conn, res){
+  parsed = jsonlite::fromJSON(content(res,'text', encoding='UTF-8'))
   keys = names(parsed)
   dataframes = list()
   while('nextUri' %in% keys){
     nextUri = parsed$nextUri
     res = GET(nextUri)
-    parsed = fromJSON(content(res,'text', encoding='UTF-8'))
+    parsed = jsonlite::fromJSON(content(res,'text', encoding='UTF-8'))
     keys = names(parsed)
     if('data' %in% keys){
       column_names = as.list(parsed$columns[,1])
