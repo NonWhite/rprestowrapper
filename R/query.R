@@ -11,7 +11,7 @@ send_query <- function(conn,sql_query){
 		)
 }
 
-get_query_result <- function(conn, res){
+get_query_result <- function(res){
   parsed = jsonlite::fromJSON(httr::content(res,'text', encoding='UTF-8'))
   keys = names(parsed)
   dataframes = list()
