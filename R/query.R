@@ -11,27 +11,28 @@ send_query <- function(conn,sql_query){
 		)
 }
 
-get_query_result <- function(res){
-	browser()
-	parsed = jsonlite::fromJSON(content(res,'text'))
-	nextUri = parsed$nextUri
-	res = httr::GET(nextUri)
-	parsed = jsonlite::fromJSON(content(res,'text'))
-	keys = names(parsed)
-	dataframes = list()
-	while('nextUri' %in% keys){
-		column_names = as.list(parsed$columns[,1])
-		dataframe = data.frame(parsed$data)
-		if(nrow(dataframe) > 0){
-			colnames(dataframe) = column_names
-		}
-		dataframes = c(dataframes, list(dataframe))
-		nextUri = parsed$nextUri
-		res = httr::GET(nextUri)
-		parsed = jsonlite::fromJSON(content(res,'text'))
-		keys = names(parsed)
-	}
-	Reduce(function(x, y) merge(x, y, all=TRUE), dataframes)
+get_query_result <- function(conn, parsed){
+  keys = names(parsed)
+  dataframes = list()
+  while('nextUri' %in% keys){
+    nextUri = parsed$nextUri
+    res = GET(nextUri)
+    parsed = fromJSON(content(res,'text', encoding='UTF-8'))
+    keys = names(parsed)
+    if('data' %in% keys){
+      column_names = as.list(parsed$columns[,1])
+      dataframe = data.frame(parsed$data)
+      if(nrow(dataframe) > 0){
+        colnames(dataframe) = column_names
+      }
+      dataframes = c(dataframes, list(dataframe))
+    }
+    else{
+      print('RUNNING')
+      Sys.sleep(5)
+    }
+  }
+  r = Reduce(function(x, y) merge(x, y, all=TRUE), dataframes)
 }
 
 #' Run query on presto

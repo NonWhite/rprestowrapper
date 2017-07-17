@@ -3,7 +3,7 @@ Title: R wrapper for Presto server
 Version: 0.1
 Authors@R: c(
 		person("Nonwhite", "", email = "wperezurcia@gmail.com", role = "ctb"),
-		person("Renan", "Cruz", email = "renan.cruz@tfgco.com", role = c("aut","cre"))
+		person("Renan", "Cruz", email = "renanpablocruz@gmail.com", role = c("aut","cre"))
 	)
 Description: Allows make queries on presto queries
 Depends: R (>= 3.3.2)
