@@ -29,7 +29,6 @@ get_query_result <- function(res){
       dataframes = c(dataframes, list(dataframe))
     }
     else{
-      print('RUNNING')
       Sys.sleep(5)
     }
   }
