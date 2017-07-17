@@ -1,6 +1,6 @@
 send_query <- function(conn,sql_query){
 	url = paste(conn$host, ':', conn$port, '/v1/statement', sep = '')
-	body = sql_query
+	body = gsub(';', '', sql_query)
 	r = httr::POST(url, body = body, encode = "raw",
 			httr::add_headers('X-Presto-Catalog' = conn$catalog,
 				'X-Presto-Source' = conn$source,
