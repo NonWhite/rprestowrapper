@@ -17,7 +17,7 @@ get_query_result <- function(res){
   dataframes = list()
   while('nextUri' %in% keys){
     nextUri = parsed$nextUri
-    res = GET(nextUri)
+    res = httr::GET(nextUri)
     parsed = jsonlite::fromJSON(httr::content(res,'text', encoding='UTF-8'))
     keys = names(parsed)
     if('data' %in% keys){
