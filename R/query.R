@@ -1,20 +1,18 @@
 send_query <- function(conn,sql_query){
-	url = paste(conn$host, ':', conn$port, '/v1/statement', sep = '')
-	body = gsub(';', '', sql_query)
-	r = httr::POST(url, body = body, encode = "raw",
-			httr::add_headers('X-Presto-Catalog' = conn$catalog,
-				'X-Presto-Source' = conn$source,
-				'X-Presto-Schema' = conn$schema,
-				'User-Agent' = 'rprestowrapper',
-				'X-Presto-User' = conn$user
-			)
-		)
+  url = paste(conn$host, ':', conn$port, '/v1/statement', sep = '')
+  body = gsub(';', '', sql_query)
+  r = httr::POST(url, body = body, encode = "raw",
+                httr::add_headers('X-Presto-Catalog' = conn$catalog,
+                                  'X-Presto-Source' = conn$source,
+                                  'X-Presto-Schema' = conn$schema,
+                                  'User-Agent' = 'rprestowrapper',
+                                  'X-Presto-User' = conn$user))
 }
 
 get_query_result <- function(res){
   parsed = jsonlite::fromJSON(httr::content(res,'text', encoding='UTF-8'))
   keys = names(parsed)
-  dataframes = list()
+  df = NULL
   while('nextUri' %in% keys){
     nextUri = parsed$nextUri
     res = httr::GET(nextUri)
@@ -25,14 +23,19 @@ get_query_result <- function(res){
       dataframe = data.frame(parsed$data)
       if(nrow(dataframe) > 0){
         colnames(dataframe) = column_names
+        if(!is.null(df)){
+          df = dplyr::bind_rows(df, dataframe)
+        }
+        else{
+          df = dataframe
+        }
       }
-      dataframes = c(dataframes, list(dataframe))
     }
     else{
       Sys.sleep(5)
     }
   }
-  r = Reduce(function(x, y) merge(x, y, all=TRUE), dataframes)
+  df
 }
 
 #' Run query on presto
@@ -44,6 +47,6 @@ get_query_result <- function(res){
 #' @examples
 #' run_query(conn,"select * from my_table limit 1")
 run_query <- function(conn,sql_query){
-	res = send_query(conn,sql_query)
-	dataframe = get_query_result(res)
+  res = send_query(conn,sql_query)
+  dataframe = get_query_result(res)
 }
