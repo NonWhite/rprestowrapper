@@ -56,7 +56,7 @@ get_query_result <- function(res){
   }
   columns = dplyr::select(parsed$columns, name, type)
   for(col in columns$name){
-    df[col] = type_converter(columns$type[which(columns$name == col)])(as.character(df[1,col]))
+    df[,col] = type_converter(columns$type[which(columns$name == col)])(as.character(df[,col]))
   }
   df
 }
