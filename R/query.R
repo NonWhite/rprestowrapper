@@ -54,7 +54,7 @@ get_query_result <- function(res){
       Sys.sleep(5)
     }
   }
-  columns = parsed$columns %>% select(name, type)
+  columns = select(parsed$columns, name, type)
   for(col in columns$name){
     df[col] = type_converter(columns$type[which(columns$name == col)])(as.character(df[1,col]))
   }
