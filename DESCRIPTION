@@ -8,12 +8,12 @@ Authors@R: c(
 Description: Allows make queries on presto queries
 Depends:
   R (>= 3.3.1),
-  data.table,
-  dplyr
 License: GNU GENERAL PUBLIC LICENSE v3
 Encoding: UTF-8
 LazyData: true
 Imports:
+  data.table,
+  dplyr,
   httr,
   jsonlite
 RoxygenNote: 6.0.1
