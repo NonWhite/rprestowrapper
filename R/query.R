@@ -28,9 +28,9 @@ send_query <- function(conn,sql_query){
 		'X-Presto-User' = conn$user
 	)
 	if(conn$password == ''){
-		r = httr::POST(url, body = body, encode = "raw",httr::add_headers(headers))
+		r = httr::POST(url, body = body, encode = "raw",httr::add_headers(.headers=headers))
 	}else{
-		r = httr::POST(url, body = body, encode = "raw",httr::add_headers(headers),
+		r = httr::POST(url, body = body, encode = "raw",httr::add_headers(.headers=headers),
 			httr::authenticate(user=conn$user,password=conn$password))
 	}
 	r
