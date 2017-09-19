@@ -87,8 +87,8 @@ get_query_result <- function(conn,res){
 	}
 	columns = dplyr::select(parsed$columns,name,type)
 	if(is.null(df)){
-		df <- data.frame(matrix(ncol = length(columns), nrow = 0))
-		colnames(df) <- columns
+		df <- data.frame(matrix(ncol = length(columns$name), nrow = 0))
+		colnames(df) <- columns$name
 	}
 	for(col in columns$name){
 		df[,col] = type_converter(columns$type[which(columns$name == col)])(as.character(df[,col]))
