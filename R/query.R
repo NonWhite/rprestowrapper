@@ -17,9 +17,14 @@ type_converter = function(presto_type){
   )
 }
 
-send_query <- function(conn,sql_query){
-	url = paste(conn$host, ':', conn$port, '/v1/statement', sep = '')
-	body = gsub(';', '', sql_query)
+check_error <- function(res){
+	keys = names(res)
+	if('error' %in% keys){
+		stop(res$error$message)
+	}
+}
+
+get_headers <- function(conn){
 	headers = httr::add_headers(
 		'X-Presto-Catalog' = conn$catalog,
 		'X-Presto-Source' = conn$source,
@@ -27,31 +32,41 @@ send_query <- function(conn,sql_query){
 		'User-Agent' = 'rprestowrapper',
 		'X-Presto-User' = conn$user
 	)
+}
+
+send_query <- function(conn,sql_query){
+	url = paste(conn$host, ':', conn$port, '/v1/statement', sep = '')
+	body = gsub(';', '', sql_query)
+	headers = get_headers(conn)
 	if(conn$password == ''){
 		r = httr::POST(url, body = body, encode = "raw",headers)
 	}else{
 		r = httr::POST(url, body = body, encode = "raw",headers,
 			httr::authenticate(user=conn$user,password=conn$password))
 	}
-	r
-}
-
-make_rows_request <- function(nextUri){
-	res = httr::GET(nextUri)
-	parsed = jsonlite::fromJSON(httr::content(res,'text',encoding='UTF-8'))
-	keys = names(parsed)
-	if('error' %in% keys){
-		stop(parsed$error$message)
-	}
+	parsed = jsonlite::fromJSON(httr::content(r,'text',encoding='UTF-8'))
+	check_error(parsed)
 	parsed
 }
 
-get_query_result <- function(res){
-	parsed = jsonlite::fromJSON(httr::content(res,'text', encoding='UTF-8'))
-	keys = names(parsed)
+make_rows_request <- function(conn,nextUri){
+	if(conn$password == ''){
+		res = httr::GET(nextUri,get_headers(conn))
+	}else{
+		res = httr::GET(nextUri,get_headers(conn),
+						httr::authenticate(user=conn$user,password=conn$password))
+	}
+	parsed = jsonlite::fromJSON(httr::content(res,'text',encoding='UTF-8'))
+	check_error(parsed)
+	parsed
+}
+
+get_query_result <- function(conn,res){
+	parsed = res
+	keys = names(res)
 	df = NULL
 	while('nextUri' %in% keys){
-		parsed = make_rows_request(parsed$nextUri)
+		parsed = make_rows_request(conn,parsed$nextUri)
 		keys = names(parsed)
 		if('data' %in% keys){
 			column_names = as.list(parsed$columns[,1])
@@ -70,7 +85,7 @@ get_query_result <- function(res){
 			Sys.sleep(5)
 		}
 	}
-	columns = dplyr::select(parsed$columns, name, type)
+	columns = dplyr::select(parsed$columns,name,type)
 	for(col in columns$name){
 		df[,col] = type_converter(columns$type[which(columns$name == col)])(as.character(df[,col]))
 	}
@@ -87,8 +102,5 @@ get_query_result <- function(res){
 #' run_query(conn,"select * from my_table limit 1")
 run_query <- function(conn,sql_query){
 	res = send_query(conn,sql_query)
-	if('error' %in% names(res)){
-		stop(res$error$message)
-	}
-	dataframe = get_query_result(res)
+	dataframe = get_query_result(conn,res)
 }
