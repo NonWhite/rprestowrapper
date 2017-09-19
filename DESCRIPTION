@@ -1,6 +1,6 @@
 Package: rprestowrapper
 Title: R wrapper for Presto server
-Version: 0.1
+Version: 1.0
 Authors@R: c(
 		person("Nonwhite", "", email = "wperezurcia@gmail.com", role = "ctb"),
 		person("Renan", "Cruz", email = "renanpablocruz@gmail.com", role = c("aut","cre"))
