@@ -24,7 +24,7 @@ send_query <- function(conn,sql_query){
 		'X-Presto-Catalog' = conn$catalog,
 		'X-Presto-Source' = conn$source,
 		'X-Presto-Schema' = conn$schema,
-		'User-Agent' = 'rprestowrapper'
+		'User-Agent' = 'rprestowrapper',
 		'X-Presto-User' = conn$user
 	)
 	if(conn$password == ''){
