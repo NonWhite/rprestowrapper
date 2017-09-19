@@ -88,7 +88,7 @@ get_query_result <- function(res){
 run_query <- function(conn,sql_query){
 	res = send_query(conn,sql_query)
 	if('error' %in% names(res)){
-		stop(res$error%message)
+		stop(res$error$message)
 	}
 	dataframe = get_query_result(res)
 }
