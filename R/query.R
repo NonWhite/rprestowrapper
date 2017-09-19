@@ -33,6 +33,7 @@ send_query <- function(conn,sql_query){
 		r = httr::POST(url, body = body, encode = "raw",httr::add_headers(headers),
 			httr::authenticate(user=conn$user,password=conn$password))
 	}
+	r
 }
 
 make_rows_request <- function(nextUri){
