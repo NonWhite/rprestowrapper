@@ -20,7 +20,7 @@ type_converter = function(presto_type){
 send_query <- function(conn,sql_query){
 	url = paste(conn$host, ':', conn$port, '/v1/statement', sep = '')
 	body = gsub(';', '', sql_query)
-	headers = list(
+	headers = httr::add_headers(
 		'X-Presto-Catalog' = conn$catalog,
 		'X-Presto-Source' = conn$source,
 		'X-Presto-Schema' = conn$schema,
@@ -28,9 +28,9 @@ send_query <- function(conn,sql_query){
 		'X-Presto-User' = conn$user
 	)
 	if(conn$password == ''){
-		r = httr::POST(url, body = body, encode = "raw",httr::add_headers(.headers=headers))
+		r = httr::POST(url, body = body, encode = "raw",headers)
 	}else{
-		r = httr::POST(url, body = body, encode = "raw",httr::add_headers(.headers=headers),
+		r = httr::POST(url, body = body, encode = "raw",headers,
 			httr::authenticate(user=conn$user,password=conn$password))
 	}
 	r
