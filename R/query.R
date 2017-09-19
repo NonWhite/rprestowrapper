@@ -51,7 +51,7 @@ get_query_result <- function(res){
 	keys = names(parsed)
 	df = NULL
 	while('nextUri' %in% keys){
-		parsed = make_rows_requst(parsed$nextUri)
+		parsed = make_rows_request(parsed$nextUri)
 		keys = names(parsed)
 		if('data' %in% keys){
 			column_names = as.list(parsed$columns[,1])
