@@ -62,38 +62,54 @@ make_rows_request <- function(conn,nextUri){
 }
 
 get_query_result <- function(conn,res){
-	parsed = res
-	keys = names(res)
-	df = NULL
-	while('nextUri' %in% keys){
-		parsed = make_rows_request(conn,parsed$nextUri)
-		keys = names(parsed)
-		if('data' %in% keys){
-			column_names = as.list(parsed$columns[,1])
-			dataframe = data.frame(parsed$data)
-			if(nrow(dataframe) > 0){
-				colnames(dataframe) = column_names
-				if(!is.null(df)){
-					df = dplyr::bind_rows(df, dataframe)
-				}
-				else{
-					df = dataframe
-				}
-			}
-		}
-		else{
-			Sys.sleep(5)
-		}
-	}
-	columns = dplyr::select(parsed$columns,name,type)
-	if(is.null(df)){
-		df <- data.frame(matrix(ncol = length(columns$name), nrow = 0))
-		colnames(df) <- columns$name
-	}
-	for(col in columns$name){
-		df[,col] = type_converter(columns$type[which(columns$name == col)])(as.character(df[,col]))
-	}
-	df
+        parsed = res
+        keys = names(res)
+        df = NULL
+        while('nextUri' %in% keys){
+                parsed = make_rows_request(conn,parsed$nextUri)
+                keys = names(parsed)
+                if('data' %in% keys){
+                        column_names = as.list(parsed$columns[,1])
+                        
+                        if(is.list(parsed$data)){
+                                for (i in 1:length(parsed$data)){
+                                        for (j in 1: length(parsed$data[[1]])){
+                                                if(length(parsed$data[[i]][[j]]) > 1){
+                                                        parsed$data[[i]][[j]] <- paste(parsed$data[[i]][[j]], collapse = ',')
+                                                }
+                                                if(is.null(parsed$data[[i]][[j]])){
+                                                        parsed$data[[i]][[j]] <- NA
+                                                }
+                                        }
+                                }
+                                dataframe = data.frame(matrix(unlist(parsed$data), nrow = length(parsed$data), ncol = length(parsed$data[[1]]), byrow = T))        
+                        } else {
+                                dataframe = data.frame(parsed$data)
+                        }
+                        
+                        if(nrow(dataframe) > 0){
+                                colnames(dataframe) = column_names
+                                if(!is.null(df)){
+                                        df = dplyr::bind_rows(df, dataframe)
+                                }
+                                else{
+                                        df = dataframe
+                                }
+                        }
+                }
+                else{
+                        Sys.sleep(5)
+                }
+        }
+        columns = dplyr::select(parsed$columns,name,type)
+        if(is.null(df)){
+                df <- data.frame(matrix(ncol = length(columns$name), nrow = 0))
+                colnames(df) <- columns$name
+        }
+        for(col in columns$name){
+                df[,col] = type_converter(columns$type[which(columns$name == col)])(as.character(df[,col]))
+        }
+        df
 }
 
 #' Run query on presto
