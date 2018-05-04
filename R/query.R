@@ -17,6 +17,7 @@ type_converter = function(presto_type){
   )
 }
 
+
 check_error <- function(res){
 	keys = names(res)
 	if('error' %in% keys){
@@ -61,6 +62,8 @@ make_rows_request <- function(conn,nextUri){
 	parsed
 }
 
+quietly_bind_rows = purrr::quietly(dplyr::bind_rows)
+
 get_query_result <- function(conn,res){
         parsed = res
         keys = names(res)
@@ -90,7 +93,7 @@ get_query_result <- function(conn,res){
                         if(nrow(dataframe) > 0){
                                 colnames(dataframe) = column_names
                                 if(!is.null(df)){
-                                        df = dplyr::bind_rows(df, dataframe)
+                                        df = quietly_bind_rows(df, dataframe)[['result']]
                                 }
                                 else{
                                         df = dataframe
