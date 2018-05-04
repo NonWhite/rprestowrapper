@@ -1,4 +1,5 @@
 type_converter = function(presto_type){
+  presto_type = presto_type[1]
   presto_type = ifelse(presto_type %like% 'varchar', 'varchar', presto_type)
   switch(presto_type,
   'bigint' = as.numeric,
